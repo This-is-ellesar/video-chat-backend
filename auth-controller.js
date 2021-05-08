@@ -6,8 +6,8 @@ const  bcrypt = require('bcryptjs');
 class authController { 
   async registration(req, res) {
     try {
-      const { username, password } = req.body
-      const condidate = await User.findOne({username})
+      const { name, password } = req.body
+      const condidate = await User.findOne({name})
 
       if(condidate) {
         return res.status(400).json({ 
