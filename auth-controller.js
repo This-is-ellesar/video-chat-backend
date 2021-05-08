@@ -1,12 +1,39 @@
 const User = require('./models/User')
 const Role = require('./models/Role')
-const  bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const { validationResult } = require('express-validator')
+const { secret } = require('./config')
 
+
+const generateAccessToken = (id, roles) => {
+  const payload = {
+    id,
+    roles
+  }
+
+  return jwt.sign(payload, secret, { 
+    expiresIn: "24h"
+  })
+}
 
 class authController { 
   async registration(req, res) {
     try {
-      const { name, password } = req.body
+      const errors = validationResult(req)
+
+      if(!errors.isEmpty()) {
+        return res.status(400).json({
+          message: `Ошибка при регистрации: Данные не валидны!`
+        })
+      }
+
+      const { 
+        name, 
+        surname,
+        nickname, 
+        password 
+      } = req.body
       const condidate = await User.findOne({name})
 
       if(condidate) {
@@ -20,7 +47,9 @@ class authController {
         value: 'user'
       })
       const user = new User({ 
-        username, 
+        name,
+        surname,
+        nickname, 
         password: hashPass, 
         roles: [userRole.value] 
       })
@@ -40,7 +69,37 @@ class authController {
   }
   async login(req, res) {
     try {
-          
+      const {
+        name,
+        password
+      } = req.body
+
+      const user = await User.findOne({ 
+        name, 
+      })
+
+      if(!user){
+        return res.status(400).json({
+          message: `Пользователь с именем ${name} не зарегистрирован!`
+        })
+      }
+
+      const validPass = bcrypt.compareSync(password, user.password)
+
+      if(!validPass) {
+        return res.status(400).json({
+          message: `Неправильное имя пользователя или пароль!`
+        })
+      }
+
+
+      const token = generateAccessToken(user._id, user.roles)
+      
+      return res.status(200).json({ 
+        user,
+        token
+      })
+
     } catch (error) {
       console.log(error)
       res.status(400).json({ 
@@ -50,14 +109,8 @@ class authController {
   }
   async getUsers(req, res){
     try {
-      res.json('server work')
-    } catch (error) {
-      console.log(error)
-    }
-  }
-  async addRole(req, res) {
-    try {
-          
+      const users = await User.find()
+      res.status(200).json(users)
     } catch (error) {
       console.log(error)
     }
