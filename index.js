@@ -1,13 +1,17 @@
 const express = require('express')
+const cors = require('cors')
 const mongoose = require('mongoose')
-const router = require('./Routers/auth-router')
-const PORT = process.env.PORT || 3000
+const authRouter = require('./Routers/auth-router')
+const roomRouter = require('./Routers/room-router')
+const PORT = process.env.PORT || 5000
 
 
 const app = express()
 
+app.use(cors())
 app.use(express.json())
-app.use('/auth', router)
+app.use('/auth', authRouter)
+app.use('/room', roomRouter)
 
 
 const start = async () => {
