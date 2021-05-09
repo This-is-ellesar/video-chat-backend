@@ -115,6 +115,21 @@ class authController {
       console.log(error)
     }
   }
+  async getUser (req, res) {
+    try {
+      const user = await User.find({_id: req.params.id})
+
+      if(!user) {
+        res.status(422).json({
+          message: 'Пользователь не наден!'
+        })
+      }
+  
+      res.status(200).json(user)
+    } catch(e){
+      console.log(e)
+    }
+  }
 }
 
 module.exports = new authController()
