@@ -5,6 +5,7 @@ const router = new Router()
 
 router.post('/add_room/', controller.addRoom)
 router.get('/rooms/', controller.getRooms)
+router.get('/rooms/:id/', controller.getRoom)
 
 
 module.exports = router

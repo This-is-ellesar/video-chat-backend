@@ -14,6 +14,22 @@ class roomController {
         }
     }
 
+    async getRoom(req, res){
+        try {
+            const room = await Room.find({ _id: req.params.id })
+
+            if(!room) {
+                res.status(422).json({ 
+                    message: 'Комната не найдена!'
+                })
+            }
+
+            res.status(200).json(room)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     async addRoom(req, res) {
         try{ 
             const errors = validationResult(res)
