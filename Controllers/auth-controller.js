@@ -42,7 +42,7 @@ class authController {
         })
       }
 
-      const  hashPass = bcrypt.hashSync(password, 7);
+      const hashPass = bcrypt.hashSync(password, 7);
       const userRole = await Role.findOne({ 
         value: 'user'
       })
