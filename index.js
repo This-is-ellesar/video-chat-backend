@@ -1,7 +1,11 @@
+//libs
 const express = require('express')
 const cors = require('cors')
 const multer = require('multer')
 const mongoose = require('mongoose')
+const swaggerJsDoc = require('swagger-jsdoc')
+const swaggerUi = require('swagger-ui-express')
+//imports
 const authRouter = require('./Routers/auth-router')
 const roomRouter = require('./Routers/room-router')
 const PORT = process.env.PORT || 5000
@@ -15,10 +19,22 @@ const storage = multer.diskStorage({
         cb(null, file.originalname)
     }
 })
-//
+
+//swagger
+const swaggerOptions = {
+    swaggerDefinition: {
+        ingj: {
+            title: 'Custom api'
+        },
+    },
+    apis: ['./Routers/room-router.js']
+}
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions)
 
 const app = express()
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 app.use(multer({ storage: storage }).single('filedata'))
 app.use('./uploads', express.static('uploads'))
 app.use(cors())
