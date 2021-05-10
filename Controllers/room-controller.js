@@ -79,6 +79,15 @@ class roomController {
                     message: 'Ошибка: Не удалось загрузить файл на сервер!'
                 })
             }
+
+            room.avatar = req.file.path
+
+            room.save()
+
+
+            res.status(201).json({
+                message: 'Аватарка успешно добавлена!'
+            })
         } catch (error) {
             console.log(error)
         }

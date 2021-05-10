@@ -20,6 +20,7 @@ const storage = multer.diskStorage({
 const app = express()
 
 app.use(multer({ storage: storage }).single('filedata'))
+app.use('./uploads', express.static('uploads'))
 app.use(cors())
 app.use(express.json())
 app.use('/auth', authRouter)
