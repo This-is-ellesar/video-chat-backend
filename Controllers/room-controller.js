@@ -1,6 +1,5 @@
 const Room = require('../models/Room')
-const User = require('../models/User')
-const Role = require('../models/Role')
+const multer = require('multer')
 const { validationResult } = require('express-validator')
 
 
@@ -59,6 +58,29 @@ class roomController {
             res.status(201).json('Комната успешно создана!')
         } catch(e){
             console.log(e)
+        }
+    }
+
+    async changeRoom(req, res) {
+        try {
+            let filedata = req.file
+            let roomId = req.params.id
+
+            const room = await Room.findOne({
+                _id: roomId
+            })
+
+            if(!room){
+                res.status(400).json('Ошибка при создании комнаты: Комната с таким названием уже существует!')
+            }   
+
+            if(!filedata) {
+                res.status(400).json({
+                    message: 'Ошибка: Не удалось загрузить файл на сервер!'
+                })
+            }
+        } catch (error) {
+            console.log(error)
         }
     }
 }
