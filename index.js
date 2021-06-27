@@ -23,9 +23,15 @@ const storage = multer.diskStorage({
 //swagger
 const swaggerOptions = {
     swaggerDefinition: {
-        ingj: {
-            title: 'Custom api'
+        info: {
+            title: 'Video-chat API',
+            description: 'This is my first api for a node.js'
         },
+        servers: [
+            {
+                url: 'http://localhost:5000/'
+            }
+        ]
     },
     apis: ['./Routers/room-router.js']
 }
