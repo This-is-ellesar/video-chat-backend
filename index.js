@@ -5,7 +5,7 @@ const multer = require('multer');
 const mongoose = require('mongoose');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-const io = requird('socket.io');
+const io = require('socket.io');
 //imports
 const authRouter = require('./Routers/auth-router');
 const roomRouter = require('./Routers/room-router');
