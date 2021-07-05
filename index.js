@@ -1,15 +1,89 @@
 //libs
 const express = require('express');
+const app = express();
 const cors = require('cors');
 const multer = require('multer');
+const { version, validate } = require('uuid');
 const mongoose = require('mongoose');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
-const io = require('socket.io');
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
 //imports
 const authRouter = require('./Routers/auth-router');
 const roomRouter = require('./Routers/room-router');
+const ACTIONS = require('./Socket/action');
 const PORT = process.env.PORT || 5000;
+
+function getClientRooms() {
+  const { rooms } = io.sockets.adapter;
+
+  return Array.from(rooms.keys()).filter(
+    roomID => validate(roomID) && version(roomID) === 4
+  );
+}
+
+function shareRoomsInfo() {
+  io.emit(ACTIONS.SHARE_ROOMS, {
+    rooms: getClientRooms(),
+  });
+}
+
+io.on('connection', socket => {
+  shareRoomsInfo();
+
+  socket.on(ACTIONS.JOIN, config => {
+    const { room: roomId } = config;
+    const { rooms: joinRooms } = socket;
+
+    if (Array.from(joinRooms).includes(roomId)) {
+      return console.warn(`Already joined to ${roomId}`);
+    }
+
+    const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
+
+    clients.forEach(clientId => {
+      io.to(clientId).emit(ACTIONS.ADD_PEER, {
+        peerID: socket.id,
+        createOffer: false,
+      });
+
+      socket.emit(ACTIONS.ADD_PEER, {
+        peerID: clientId,
+        createOffer: true,
+      });
+    });
+
+    socket.join(roomId);
+
+    shareRoomsInfo();
+  });
+
+  function leaveRoom() {
+    const { rooms } = socket;
+
+    Array.from(rooms).forEach(roomID => {
+      const clients = Array.from(io.sockets.adapter.rooms.get(roomID) || []);
+
+      clients.forEach(clientId => {
+        io.to(clientId).emit(ACTIONS.REMOVE_PEER, {
+          peerID: socket.id,
+        });
+
+        socket.emit(ACTIONS.REMOVE_PEER, {
+          peerID: clientId,
+        });
+      });
+
+      socket.leave(roomID);
+    });
+
+    shareRoomsInfo();
+  }
+
+  socket.on(ACTIONS.LEAVE, leaveRoom);
+  socket.on('disconnecting', leaveRoom);
+});
 
 //multer
 const storage = multer.diskStorage({
@@ -39,8 +113,6 @@ const swaggerOptions = {
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
-const app = express();
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use(multer({ storage: storage }).single('filedata'));
 app.use('./uploads', express.static('uploads'));
@@ -54,7 +126,8 @@ const start = async () => {
     await mongoose.connect(
       'mongodb+srv://Ellesar:Ellesaradmin1@cluster0.rf9a8.mongodb.net/Video-chat?retryWrites=true&w=majority'
     );
-    app.listen(PORT, () => console.warn(`Server started on port ${PORT}`));
+
+    server.listen(PORT, () => console.warn(`Server started on port ${PORT}`));
   } catch (e) {
     console.log(`Server error: ${e}!`);
   }
