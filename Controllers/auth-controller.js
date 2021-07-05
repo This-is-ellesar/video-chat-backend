@@ -1,5 +1,5 @@
-const User = require('../models/User');
-const Role = require('../models/Role');
+const User = require('../Models/User');
+const Role = require('../Models/Role');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
@@ -112,8 +112,6 @@ class authController {
           message: 'Пользователь не наден!',
         });
       }
-
-      console.log(user[0]);
 
       res.status(200).json(user[0]);
     } catch (e) {

@@ -1,4 +1,4 @@
-const Room = require('../models/Room');
+const Room = require('../Models/Room');
 const multer = require('multer');
 const { validationResult } = require('express-validator');
 
